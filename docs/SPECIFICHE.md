@@ -4,7 +4,7 @@
 Lo script Python deve prendere in input un **file GTF** contenente diversi geni strutturato come il file di esempio nella folder `src`.
 
 ### Formato GTF
-File di puro testo con estensione .gtf; contiene record (righe sparate da wraps). Ogni riga può far riferimento ad una delle seguenti feature:
+File di puro testo con estensione .gtf; contiene record (righe separate da wraps). Ogni riga può far riferimento ad una delle seguenti feature:
 * un esone;
 * una  (coding sequence) o una sua parte;
 * un 5' UTR (untranslated region) o una sua parte;
@@ -64,7 +64,7 @@ Il non campo contiene una lista di attributi (coppie chiave-valore) così format
 * uno spazio separa la chiave dal valore;
 * il valore pare essere sempre di tipo stringa (doppi apici);
 * due coppie chiave-valore sono separate sempre da punto e virgola + spazio (`; `);
-* non c'è il punto e virgola dopo l'ultima coppia chiave-valore.
+* **c'è il punto e virgola dopo l'ultima coppia** chiave-valore.
 
 Gli attributi obbligatori (sempre presenti) sono:
 * `"gene_id"`;
@@ -87,7 +87,7 @@ File FASTA dell’esoma, ovvero tutte le sequenze degli esoni contenuti nel GTF 
 
 Nell’header FASTA di ogni esone devono comparire le seguenti informazioni:
 * lunghezza
-* id del gene a cui l’espone appartiene
+* id del gene a cui l’esone appartiene
 * lista degli id dei trascritti a cui l’espone appartiene
 
 ### File .fa delle coperture codificanti
@@ -97,10 +97,10 @@ Nell’header FASTA di ogni copertura devono comparire le seguenti informazioni:
 * lunghezza della copertura
 * id del gene
 
-#### Copertura Codificante
+### Copertura Codificante
 La copertura codificante è la sequenza di basi tale per cui ogni base appartiene a una regione codificante del gene.
 
-##### Esempio
+#### Esempio
 Supponi di avere un gene con i seguenti tre trascritti:
 - trascritto 1 —> concatenazione degli esoni A, B e C
 - trascritto 2 —> concatenazione degli esoni A’, B e C dove A’ è un prefisso di A
