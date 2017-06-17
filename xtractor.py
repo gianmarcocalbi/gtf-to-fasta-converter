@@ -48,7 +48,7 @@ class xtractor:
     pass
 
 
-def ParseGTF():
+def loadGTF():
     global gtf
     with open(GTF_PATH) as raw_gtf:
         for record in raw_gtf:
@@ -58,7 +58,10 @@ def ParseGTF():
             start_index = field[3]
             end_index = field[4]
             strand = field[6]
-            frame = field[7]
+            if field[7] == ".":
+                frame = None
+            else:
+                frame = int(field[7])
             attr = field[8]
             gene_id = transcript_id = 0
             if attr[len(attr)-1] == ";":
@@ -91,7 +94,16 @@ def ParseGTF():
             })
     #print(json.dumps(gtf))
 
+def build():
+    global gtf
+    # foreach genome
+        # foreach gene
+            # get transcript
+
+
+    pass
 
 if __name__ == '__main__':
-    ParseGTF()
+    loadGTF()
+    build()
     pass
