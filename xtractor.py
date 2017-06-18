@@ -107,28 +107,23 @@ def build():
     pass
 
 def reverseAndComplement (str):
-    """
-    complement = {
+    
+    complementDictionary = {
         'A': 'T',
         'C': 'G',
         'G': 'C',
         'T': 'A'
     }
-    """
+    
     newstr = []
     for i in range(0, len(str)):
         c = str[i]
 
-        if c == "A":
-            newstr.append("T")
-        elif c == "C":
-            newstr.append("G")
-        elif c == "G":
-            newstr.append("C")
-        elif c == "T":
-            newstr.append("A")
+        if c in complementDictionary:
+            newstr.append(complementDictionary[c])
         else:
-            print("fatal error in complementing transcript")
+            print("fatal error in complementing transcript: found an unknown nucleobasis")
+            return 
 
     # reverse
     return "".join(newstr)[::-1]
