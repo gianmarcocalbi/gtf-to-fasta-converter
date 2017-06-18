@@ -96,12 +96,42 @@ def loadGTF():
 
 def build():
     global gtf
-    # foreach genome
-        # foreach gene
-            # get transcript
+
+    for genome in gtf:
+        for gene in genome:
+            for transcript in gene:
+                #
+                pass
 
 
     pass
+
+def reverseAndComplement (str):
+    """
+    complement = {
+        'A': 'T',
+        'C': 'G',
+        'G': 'C',
+        'T': 'A'
+    }
+    """
+    newstr = []
+    for i in range(0, len(str)):
+        c = str[i]
+
+        if c == "A":
+            newstr.append("T")
+        elif c == "C":
+            newstr.append("G")
+        elif c == "G":
+            newstr.append("C")
+        elif c == "T":
+            newstr.append("A")
+        else:
+            print("fatal error in complementing transcript")
+
+    # reverse
+    return "".join(newstr)[::-1]
 
 if __name__ == '__main__':
     loadGTF()
