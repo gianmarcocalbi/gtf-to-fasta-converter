@@ -101,5 +101,8 @@ gtf_sample = {
 }
 ```
 
+## Interfaccia "interna"
+
+### readGtf(gtf_path)
 
 

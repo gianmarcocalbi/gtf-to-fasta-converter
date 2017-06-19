@@ -1,0 +1,5 @@
+S4mPl3_1	VEGA_Known	exon	10	80	.	-	.	transcript_id "U52112.4-005"; gene_id "ARHGAP4";
+S4mPl3_1	VEGA_Known	CDS	18	27	.	-	0	transcript_id "U52112.4-005"; gene_id "ARHGAP4";
+S4mPl3_1	VEGA_Known	exon	92	98	.	-	.	transcript_id "U52112.4-018"; gene_id "ARHGAP4";
+S4mPl3_1	VEGA_Known	exon	81	84	.	-	.	transcript_id "U52112.4-018"; gene_id "ARHGAP4";
+S4mPl3_1	VEGA_Known	exon	110	200	.	-	.	transcript_id "U52112.4-018"; gene_id "ARHGAP4";
