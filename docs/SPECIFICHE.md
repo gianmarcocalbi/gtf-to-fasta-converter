@@ -88,7 +88,7 @@ File FASTA dell’esoma, ovvero tutte le sequenze degli esoni contenuti nel GTF 
 Nell’header FASTA di ogni esone devono comparire le seguenti informazioni:
 * lunghezza
 * id del gene a cui l’esone appartiene
-* lista degli id dei trascritti a cui l’espone appartiene
+* lista degli id dei trascritti a cui l’esone appartiene
 
 ### File .fa delle coperture codificanti
 File FASTA delle “coperture codificanti” di ciascun gene.
