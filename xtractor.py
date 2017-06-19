@@ -14,6 +14,10 @@ OUTPUT_PATH = None
 
 # Big GTF data structure
 gtf = {}
+
+# FASTA GENOME data structure
+fasta = {}
+
 """
 gtf_sample = {
     "ENm006": {
@@ -47,10 +51,9 @@ gtf_sample = {
 class xtractor:
     pass
 
-
-def loadGTF():
-    global gtf
-    with open(GTF_PATH) as raw_gtf:
+def readGtf(gtf_path):
+    tmp_gtf = {}
+    with open(gtf_path) as raw_gtf:
         for record in raw_gtf:
             field = record.replace("\"", "").replace("\n", "").split("\t")
             genome = field[0]
@@ -74,25 +77,46 @@ def loadGTF():
                 elif key == "gene_id":
                     gene_id = value
 
-            if genome not in gtf:
-                gtf[genome] = {}
+            if genome not in tmp_gtf:
+                tmp_gtf[genome] = {}
 
-            if gene_id not in gtf[genome]:
-                gtf[genome][gene_id] = {}
+            if gene_id not in tmp_gtf[genome]:
+                tmp_gtf[genome][gene_id] = {}
 
-            if transcript_id not in gtf[genome][gene_id]:
-                gtf[genome][gene_id][transcript_id] = {}
+            if transcript_id not in tmp_gtf[genome][gene_id]:
+                tmp_gtf[genome][gene_id][transcript_id] = {}
 
-            if feature_name not in gtf[genome][gene_id][transcript_id]:
-                gtf[genome][gene_id][transcript_id][feature_name] = []
+            if feature_name not in tmp_gtf[genome][gene_id][transcript_id]:
+                tmp_gtf[genome][gene_id][transcript_id][feature_name] = []
 
-            gtf[genome][gene_id][transcript_id][feature_name].append({
+            tmp_gtf[genome][gene_id][transcript_id][feature_name].append({
                 "start_index" : int(start_index),
                 "end_index" : int(end_index),
                 "strand" : strand,
                 "frame" : frame
             })
-    #print(json.dumps(gtf))
+
+    return tmp_gtf
+
+def readFastaGenome(fa_path):
+    genome = {}
+    genome_id = ""
+    # Open and read fasta file located in fa_path
+    with open(fa_path) as raw_fa:
+        tmp_str = ""
+        # read every single line till EOF
+        for line in raw_fa:
+            # if line is a fasta header
+            if line[0] == ">":
+                # extract genome name (id)
+                genome_id = line[1:].replace("\n", "")
+            else:
+                # append nucleotides'sequence
+                tmp_str = tmp_str + (line.replace("\n", ""))
+
+        genome[genome_id] = tmp_str
+    return genome
+
 
 def build():
     global gtf
@@ -129,6 +153,4 @@ def reverseAndComplement (str):
     return "".join(newstr)[::-1]
 
 if __name__ == '__main__':
-    loadGTF()
-    build()
     pass
