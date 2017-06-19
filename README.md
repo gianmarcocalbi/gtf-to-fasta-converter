@@ -2,33 +2,52 @@
 
 Lo script agisce secondo le specifiche in `docs/SPECIFICHE.md`.
 
-Riceve in input un file GTF (.gtf), produce in output 3 file FASTA (.fa).
+Riceve in input un file GTF (.gtf), un file FASTA (.fa) produce in output 3 file FASTA (.fa).
 
-## Diversi tipi di utilizzo
+## Output
+Lo script può generare tre diversi file:
+* `$GENOME_$TIMESTAMP_transcripts.fa` : file contenente i trascritti...
+* `$GENOME_$TIMESTAMP_exome.fa` : file contenente l'esoma del genoma passato in input..
+* `$GENOME_$TIMESTAMP_cc.fa` : file contenente le coperture codificanti del genoma...
 
-Lo script funziona da riga di comando (`$`).
+Con `$GENOME` che è l'ID del genoma estratto dall'header del genoma passato in input e `$TIMESTAMP` è il timestamp al momento della creazione del file (è uno stratagemma per essere sicuri di avere file con nomi univoci ad ogni esecuzione del programma).
 
-# MANCA LA GENOMICA!!!
+## Utilizzo
 
-### Tutti i file nella cartella corrente
-```bash
-$ pyhton xtractor.py FILE.gtf
+Lo script funziona da riga di comando nel modo seguente:
 ```
-Crea i tre file nella cartella corrente chiamati:
-* transcripts_TIMESTAMP.fa
-* exome_TIMESTAMP.fa
-* cc_TIMESTAMP.fa
-
-### Tutti i file in una cartella specifica
-```bash
-$ pyhton xtractor.py FILE.gtf PATH/
+$ python xtractor.py path/to/GENOME.fa path/to/INPUT.gtf [ARGS]
+``` 
+Gli argomenti `path/to/GENOME.fa` e `path/to/INPUT.gtf` sono obbligatori e corrispondono ai percorsi (relativi o assoluti) rispettivamente del file del genoma (in formato FASTA) e del file della gtf (in formato GTF). L'**ordine dei parametri** `GENOME.fa` e `INTPU.gtf` **è importante**!
 ```
-Crea i tre file nella cartella PATH/ chiamati:
-* transcripts_TIMESTAMP.fa
-* exome_TIMESTAMP.fa
-* cc_TIMESTAMP.fa
+$ python xtractor.py path/to/INPUT.gtf path/to/GENOME.fa [ARGS]
+``` 
 
-## Aggiungere un po' di flags a caso
+Lo script accetta anche una serie di parametri opzionali "**ARGS**" in base alle esigenze di gestione e creazione dei file in output.
+
+Si digiti 
+```
+$ python xtractor.py -h
+```
+o, equivalentemente
+```
+$ python xtractor.py --help
+```
+per un elenco dettagliato delle flag disponibili.
+
+**NB**: come in tutti gli script da riga di comando i parametri opzionali possono essere inseriti in qualsiasi ordine.
+
+### Args
+```
+$ python xtractor.py -h
+-h, --help  Mostra queste informazioni di aiuto
+
+-d, --dir <path/to/dir>    Crea i file nella cartella situata al percorso path/to/dor 
+
+-t, --transcripts   Genera in output solo il file dei trascritti
+-e, --exome         Genera in output solo il file dell'esoma
+-c, --cc            Genera in output solo il file delle coperture codificanti
+```
 
 # Struttura
 
@@ -103,6 +122,6 @@ gtf_sample = {
 
 ## Interfaccia "interna"
 
-### readGtf(gtf_path)
+### readGtf(genome_path, gtf_path, output_dir, t_flag, e_flag, c_flag)
 
 
