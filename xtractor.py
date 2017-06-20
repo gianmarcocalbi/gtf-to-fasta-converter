@@ -10,6 +10,7 @@ STD_OUT = False
 FASTA_WRAP_AFTER_COLUMNS = 50
 
 
+
 def readGtf(gtf_path):
     gtf = {}
 
