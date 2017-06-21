@@ -172,4 +172,4 @@ Procedura principale per l'analisi dei file in input. Non restituisce nulla ma t
 _finire specifica di `grind()`_
 
 ### `reverseAndComplement(str sequence)`
-Accetta una stringa di basi e ne il complemento in ordine opposto.
+Accetta una stringa di basi e ne restituisce il complemento in ordine opposto.
