@@ -37,7 +37,7 @@ In cui, per ogni trascritto, vengono specificati:
 - `$ID_GENE_N` : id del gene;
 - `$len` : lunghezza della sequenza del trascritto.
 
-### $GENOME_$TIMESTAMP_exome.fa`
+### `$GENOME_$TIMESTAMP_exome.fa`
 File contenente l'esoma del genoma passato in input. Ad esempio:
 ```
 >gene_id=$ID_GENE_1 length=$len transcripts=$id_tr1|$id_tr5|...
