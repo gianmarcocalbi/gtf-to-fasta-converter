@@ -202,15 +202,18 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
     }
     """
 
-    cc_struct = []
+    cc_struct = {}
     """
-    cc_struct = [
-        # for each exon
-        "$EXON_X1_START_INDEX;$EXON_Y1_END_INDEX",
-        "$EXON_X2_START_INDEX;$EXON_Y2_END_INDEX",
+    cc_struct = {
+        "$GENE_ID" : [
+            # for each exon
+            "$EXON_X1_START_INDEX;$EXON_Y1_END_INDEX",
+            "$EXON_X2_START_INDEX;$EXON_Y2_END_INDEX",
+            #...
+            "$EXON_Xn_START_INDEX;$EXON_Yn_END_INDEX"
+        ]
         #...
-        "$EXON_Xn_START_INDEX;$EXON_Yn_END_INDEX"
-    ]
+    }
     """
     transcript_struct[genome_id] = {}
 
@@ -271,7 +274,7 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
                         (genome_id, gene_id, transcript_id)
                     )
 
-                # "p0;pf" key for the current exon to be put into exon_struct
+                # "p0;pf" key for the current exon that will be used into exon_struct
                 tmp_exon_struct_key = str(p0) + ";" + str(pf)
                 if tmp_exon_struct_key not in exon_struct:
                     # if current exon is not in exon_struct then add it
@@ -285,8 +288,14 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
                     # else add current transcript_id to its transcripts list
                     exon_struct[tmp_exon_struct_key]["transcripts"].append(transcript_id)
 
-                if tmp_exon_struct_key not in cc_struct:
-                    cc_struct.append(tmp_exon_struct_key)
+                # if not exists, instantiate array in cc_struct for the current gene
+                if gene_id not in cc_struct:
+                    cc_struct[gene_id] = []
+
+                # append exon start_index and end_index as string "p0;pf" in cc_struct
+                # array for the current gene
+                if tmp_exon_struct_key not in cc_struct[gene_id]:
+                    cc_struct[gene_id].append(tmp_exon_struct_key)
 
             # extract tmp_dict keys
             tmp_dict_keys = list(tmp_exons_dict.keys())
@@ -386,7 +395,70 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
 
     #### format output for cc file BEGIN
     if c_flag:
-        pass
+        # loop through every gene in cc_structu
+        for gene_id in cc_struct:
+            # temp sequence for cc of the current gene
+            ccseq  = ""
+
+            # extract current gene cc array
+            gene_cc = cc_struct[gene_id]
+
+            # sort it
+            gene_cc.sort()
+
+            # var to keep previuos start_index and end_index
+            # in the following for cicle
+            prev_p0 = -1
+            prev_pf = -1
+
+            # loop through every item in gene_cc
+            for k in gene_cc:
+                # split k with regards to ";"
+                # reminder: k is format as "$start_index;$end_index"
+                p0, pf = k.split(";")
+
+                # convert them to int
+                p0 = int(p0)
+                pf = int(pf)
+
+                # it's likely that following controls are redundand
+                # or useless but I prefer redundant controls instead
+                # of any risk of failure
+
+                if p0 <= prev_pf:
+                    if pf > prev_pf:
+                        prev_pf = pf
+                        continue
+                else:
+                    if abs(prev_pf - prev_p0) > 0:
+                        ccseq += genome[genome_id][prev_p0-1:prev_pf]
+                    prev_p0 = p0
+                    if pf > prev_pf:
+                        prev_pf = pf
+
+            # cc_output header
+            cc_output += str.format(">gene_id={0} length={1}\n", gene_id, len(ccseq))
+
+            # variable to take into account how many characters
+            # there are in the current line
+            start_index = 0
+
+            # loop through every character in current cc sequence
+            while start_index < len(ccseq):
+                # if remaining cheracters to print are long enough to fill up
+                # an entire line FASTA_WRAP_AFTER_COLUMNS long
+                if start_index + FASTA_WRAP_AFTER_COLUMNS < len(ccseq):
+                    # then print a line FASTA_WRAP_AFTER_COLUMNS long
+                    cc_output += ccseq[start_index:start_index + FASTA_WRAP_AFTER_COLUMNS] + "\n"
+                else:
+                    # else print remaing characters in the current cc sequence
+                    cc_output += ccseq[start_index:] + "\n"
+                    break
+                start_index += FASTA_WRAP_AFTER_COLUMNS
+
+        # remove all trailing newlines at the end of the cc output string
+        while cc_output[-1:] == "\n":
+            cc_output = cc_output[0:-1]
     #### format output for cc file END
 
     #### PRINT OUTPUTS
@@ -460,7 +532,7 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
                 pass
 
         # if all flags are down
-        if not (t_flag and e_flag and c_flag):
+        if not (t_flag or e_flag or c_flag):
             raise Exception(
                 "Very weird error: the program was sure you chose to print something on files" +
                 " but there is nothing to print :("

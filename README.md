@@ -90,7 +90,7 @@ Python 3.6.1 (default, Mar 27 2017, 00:27:06)
 
 ## Metodi interni
 
-### `readFastaGenome(str genome_path)`
+#### `readFastaGenome(str genome_path)`
 Legge il genoma collocato nel file `genome_path` (formato `.fa`) e restituisce un `dict` come il seguente:
 ```python
 genome_sample = {
@@ -98,7 +98,7 @@ genome_sample = {
 }
 ```
 
-### `readGtf(str gtf_path)`
+#### `readGtf(str gtf_path)`
 Legge la gtf collocata nel file `gtf_path` (formato `.gtf`) e restituisce una struttura dati json-like come la seguente:
 ```python
 gtf_sample = {
@@ -166,10 +166,21 @@ exit()
 ```
 Poi si copi il contenuto del file `nome_qualsiasi.txt` in [JSON Formatter](https://jsonformatter.curiousconcept.com/) per visualizzare la gtf in modo dettagliato e _human readable_.
 
-### `grind(str genome_path, str gtf_path, str output_dir=os.getcwd(), bool t_flag=False, bool e_flag=False, bool c_flag=False)`
-Procedura principale per l'analisi dei file in input. Non restituisce nulla ma termina generando in output i 3 file descritti all'inizio.
+#### `grind(str genome_path, str gtf_path, str output_dir=os.getcwd(), bool t_flag=False, bool e_flag=False, bool c_flag=False)`
+Procedura principale per l'analisi dei file in input. Non restituisce nulla.
 
-_finire specifica di `grind()`_
+Riceve in input due stringhe obbligatorie:
+- `genome_path` : percorso del genoma;
+- `gtf_path` : percorso della gtf.
 
-### `reverseAndComplement(str sequence)`
+Accetta ulteriori 4 parametri opzionali:
+- `output_dir` : percorso di una cartella ESISTENTE del sistema in cui verranno creati i file di output;
+- `t_flag` : valore booleano, se True allora crea il file dei trascritti, altrimenti no;
+- `e_flag` : valore booleano, se True allora crea il file dell'esoma, altrimenti no;
+- `c_flag` : valore booleano, se True allora crea il file delle coperture codificanti, altrimenti no.
+
+
+**NB**: i percorsi possono essere sia assoluti sia relativi (in tal caso devono far riferimento alla cartella in cui è contenuto il file `xtractor.py`). 
+
+#### `reverseAndComplement(str sequence)`
 Accetta una stringa di basi e ne restituisce il complemento in ordine opposto.
