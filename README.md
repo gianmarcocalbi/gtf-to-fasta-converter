@@ -13,7 +13,7 @@ Lo script può generare i seguenti 3 diversi file.
 
 _Con `$GENOME` che è l'ID del genoma estratto dall'header del genoma passato in input e `$TIMESTAMP` è il timestamp al momento della creazione del file (è uno stratagemma per essere sicuri di avere file con nomi univoci ad ogni esecuzione del programma)._
 
-###`$GENOME_$TIMESTAMP_transcripts.fa`
+### `$GENOME_$TIMESTAMP_transcripts.fa`
 File contenente i trascritti. Ad esempio:
 ```
 >$ID_TRASCRITTO_1 gene_id=$ID_GENE_1 length=$len
@@ -37,7 +37,7 @@ In cui, per ogni trascritto, vengono specificati:
 - `$ID_GENE_N` : id del gene;
 - `$len` : lunghezza della sequenza del trascritto.
 
-###$GENOME_$TIMESTAMP_exome.fa`
+### $GENOME_$TIMESTAMP_exome.fa`
 File contenente l'esoma del genoma passato in input. Ad esempio:
 ```
 >gene_id=$ID_GENE_1 length=$len transcripts=$id_tr1|$id_tr5|...
@@ -59,7 +59,7 @@ In cui, per ogni esone, vengono specificati:
 - `$id_trX|$id_trY|$id_trZ` : lista degli id dei trascritti in cui compare l'esone in questione, ogni id è separato da una barra verticale (`|`).
 
 
-###`$GENOME_$TIMESTAMP_cc.fa`
+### `$GENOME_$TIMESTAMP_cc.fa`
 File contenente le coperture codificanti del genoma. Ad esempio:
 ```
 >gene_id=$ID_GENE_1 length=$len
