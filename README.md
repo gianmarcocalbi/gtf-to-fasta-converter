@@ -1,37 +1,84 @@
 # Progetto Bioinformatica
 Lo script si comporta secondo le specifiche in `docs/SPECIFICHE.md`.
 
-Riceve in input un file GTF (`.gtf`), un file FASTA (`.fa`) produce in output 3 file FASTA (`.fa`).
+In generale, riceve in input un file GTF (`.gtf`) e un file FASTA (`.fa`) e produce in output 3 file FASTA (`.fa`).
 
 ## Dipendenze
-Lo script utilizza i moduli `argparse`, `os` e `sys`che sono già inclusi di default in python. **Per PYTHON è richiesta una VERSIONE 3+** (una distribuzione della v3 o superiore).
+Lo script utilizza i moduli `argparse`, `os`, `sys` e `time`. Essi **sono già inclusi** di default in python.
+
+**È richiesta una VERSIONE 3+ di Python** (una distribuzione della v3 o superiore).
 
 # Output
-Lo script può generare tre diversi file:
-* `$GENOME_$TIMESTAMP_transcripts.fa` : file contenente i trascritti...
+Lo script può generare i seguenti 3 diversi file.
+
+_Con `$GENOME` che è l'ID del genoma estratto dall'header del genoma passato in input e `$TIMESTAMP` è il timestamp al momento della creazione del file (è uno stratagemma per essere sicuri di avere file con nomi univoci ad ogni esecuzione del programma)._
+
+###`$GENOME_$TIMESTAMP_transcripts.fa`
+File contenente i trascritti. Ad esempio:
 ```
 >$ID_TRASCRITTO_1 gene_id=$ID_GENE_1 length=$len
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
 >$ID_TRASCRITTO_2 gene_id=$ID_GENE_1 length=$len
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXX
-
 >$ID_TRASCRITTO_N gene_id=$ID_GENE_Y length=$len
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXX
-
 #etc...
 ```
-* `$GENOME_$TIMESTAMP_exome.fa` : file contenente l'esoma del genoma passato in input..
-* `$GENOME_$TIMESTAMP_cc.fa` : file contenente le coperture codificanti del genoma...
 
-Con `$GENOME` che è l'ID del genoma estratto dall'header del genoma passato in input e `$TIMESTAMP` è il timestamp al momento della creazione del file (è uno stratagemma per essere sicuri di avere file con nomi univoci ad ogni esecuzione del programma).
+In cui, per ogni trascritto, vengono specificati:
+- `$ID_TRASCRITTO_N` : id del trascritto;
+- `$ID_GENE_N` : id del gene;
+- `$len` : lunghezza della sequenza del trascritto.
+
+###$GENOME_$TIMESTAMP_exome.fa`
+File contenente l'esoma del genoma passato in input. Ad esempio:
+```
+>gene_id=$ID_GENE_1 length=$len transcripts=$id_tr1|$id_tr5|...
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXX
+>gene_id=$ID_GENE_2 length=$len transcripts=$id_tr8|$id_tr12|...
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXX
+#etc...
+```
+
+In cui, per ogni esone, vengono specificati:
+- `$ID_GENE_N` : id del gene a cui appartiene;
+- `$len` : lunghezza della sequenza dell'esone;
+- `$id_trX|$id_trY|$id_trZ` : lista degli id dei trascritti in cui compare l'esone in questione, ogni id è separato da una barra verticale (`|`).
+
+
+###`$GENOME_$TIMESTAMP_cc.fa`
+File contenente le coperture codificanti del genoma. Ad esempio:
+```
+>gene_id=$ID_GENE_1 length=$len
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXX
+>gene_id=$ID_GENE_2 length=$len
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXX
+#etc...
+```
+
+In cui, per ogni copertura codificante, vengono specificati:
+- `$ID_GENE_N` : id del gene a cui appartiene;
+- `$len` : lunghezza della sequenza della copertura codificante.
+
 
 # Utilizzo primario dello script
 
@@ -39,7 +86,7 @@ Lo script funziona da riga di comando nel modo seguente:
 ```
 $ python xtractor.py path/to/GENOME.fa path/to/INPUT.gtf [ARGS]
 ``` 
-Gli argomenti `path/to/GENOME.fa` e `path/to/INPUT.gtf` sono obbligatori e corrispondono ai percorsi (relativi o assoluti) rispettivamente del file del genoma (in formato FASTA) e del file della gtf (in formato GTF). L'**ordine dei parametri** `GENOME.fa` e `INTPU.gtf` **è importante**!
+Gli argomenti `path/to/GENOME.fa` e `path/to/INPUT.gtf` sono obbligatori e corrispondono ai percorsi (relativi o assoluti) rispettivamente del file del genoma (in formato FASTA) e del file della gtf (in formato GTF). L'**ordine dei parametri** `GENOME.fa` e `INPUT.gtf` **è importante**!
 
 Lo script accetta anche una serie di parametri opzionali "**ARGS**" in base alle esigenze di gestione e creazione dei file in output.
 
@@ -182,5 +229,10 @@ Accetta ulteriori 4 parametri opzionali:
 
 **NB**: i percorsi possono essere sia assoluti sia relativi (in tal caso devono far riferimento alla cartella in cui è contenuto il file `xtractor.py`). 
 
+La procedura `grind(...)` produce gli output specificati ad inizio documento.
+
 #### `reverseAndComplement(str sequence)`
 Accetta una stringa di basi e ne restituisce il complemento in ordine opposto.
+
+___
+**EOF**
