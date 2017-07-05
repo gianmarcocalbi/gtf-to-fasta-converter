@@ -16,15 +16,15 @@ _Con `$GENOME` che è l'ID del genoma estratto dall'header del genoma passato in
 ### `$GENOME_$TIMESTAMP_transcripts.fa`
 File contenente i trascritti. Ad esempio:
 ```
->$ID_TRASCRITTO_1 gene_id=$ID_GENE_1 length=$len
+>/source=$GENOME_ID /gene_id="$GENE_1_ID" /gene_strand=$GENE_1_STRAND /length=$LEN /transcript_id=$TRASCRIPT_1_ID
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
->$ID_TRASCRITTO_2 gene_id=$ID_GENE_1 length=$len
+>/source=$GENOME_ID /gene_id="$GENE_1_ID" /gene_strand=$GENE_1_STRAND /length=$LEN /transcript_id=$TRASCRIPT_2_ID
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXX
->$ID_TRASCRITTO_N gene_id=$ID_GENE_Y length=$len
+>/source=$GENOME_ID /gene_id="$GENE_Y_ID" /gene_strand=$GENE_Y_STRAND /length=$LEN /transcript_id=$TRASCRIPT_X_ID
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -33,19 +33,21 @@ XXXXXXX
 ```
 
 In cui, per ogni trascritto, vengono specificati:
-- `$ID_TRASCRITTO_N` : id del trascritto;
-- `$ID_GENE_N` : id del gene;
-- `$len` : lunghezza della sequenza del trascritto.
+- `$GENOME_ID` : id univoco del genoma di riferimento;
+- `$GENE_N_ID` : id del gene a cui appartiene il trascritto (**NB**: **questo campo e solo questo campo** è circondato da doppi apici);
+- `$GENE_N_STRAND` : strand del gene (`+1` o `-1`);
+- `$TRASCRIPT_N_ID` : id del trascritto;
+- `$LEN` : lunghezza della sequenza del trascritto.
 
 ### `$GENOME_$TIMESTAMP_exome.fa`
 File contenente l'esoma del genoma passato in input. Ad esempio:
 ```
->gene_id=$ID_GENE_1 length=$len transcripts=$id_tr1|$id_tr5|...
+>/source=$GENOME_ID /gene_id="$GENE_1_ID" /gene_strand=$GENE_1_STRAND /length=$LEN /transcripts=$id_tr1|$id_tr5|...
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXX
->gene_id=$ID_GENE_2 length=$len transcripts=$id_tr8|$id_tr12|...
+>/source=$GENOME_ID /gene_id="$GENE_2_ID" /gene_strand=$GENE_2_STRAND /length=$LEN /transcripts=$id_tr11|$id_tr25|...
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -54,20 +56,22 @@ XXXXXXX
 ```
 
 In cui, per ogni esone, vengono specificati:
-- `$ID_GENE_N` : id del gene a cui appartiene;
-- `$len` : lunghezza della sequenza dell'esone;
+- `$GENOME_ID` : id univoco del genoma di riferimento;
+- `$GENE_N_ID` : id del gene a cui appartiene l'esone (**NB**: **questo campo e solo questo campo** è circondato da doppi apici);
+- `$GENE_N_STRAND` : strand del gene dell'esone (`+1` o `-1`);
+- `$LEN` : lunghezza della sequenza dell'esone;
 - `$id_trX|$id_trY|$id_trZ` : lista degli id dei trascritti in cui compare l'esone in questione, ogni id è separato da una barra verticale (`|`).
 
 
 ### `$GENOME_$TIMESTAMP_cc.fa`
 File contenente le coperture codificanti del genoma. Ad esempio:
 ```
->gene_id=$ID_GENE_1 length=$len
+>/source=$GENOME_ID /gene_id="$GENE_1_ID" /gene_strand=$GENE_1_STRAND /length=$LEN
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXX
->gene_id=$ID_GENE_2 length=$len
+>/source=$GENOME_ID /gene_id="$GENE_2_ID" /gene_strand=$GENE_2_STRAND /length=$LEN
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -76,9 +80,13 @@ XXXXXXX
 ```
 
 In cui, per ogni copertura codificante, vengono specificati:
-- `$ID_GENE_N` : id del gene a cui appartiene;
-- `$len` : lunghezza della sequenza della copertura codificante.
+- `$GENOME_ID` : id univoco del genoma di riferimento;
+- `$GENE_N_ID` : id del gene a cui è riferita la copertura codificante (**NB**: **questo campo e solo questo campo** è circondato da doppi apici);
+- `$GENE_N_STRAND` : strand del gene (`+1` o `-1`);
+- `$LEN` : lunghezza della sequenza della copertura.
 
+
+_**NB**: il formato degli header dei file rispecchia lo standard utilizzato nelle banche dati._
 
 # Utilizzo primario dello script
 

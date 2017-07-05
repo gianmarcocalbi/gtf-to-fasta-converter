@@ -178,12 +178,25 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
     genome = readFastaGenome(genome_path)
     genome_id = list(genome.keys())[0]
 
+    gene_strand_map = {}
+    """
+    gene_strand_map = {
+        $GENE_1_ID : $GENE_1_STRAND, # here strand appears as +1 or -1
+        $GENE_2_ID : $GENE_2_STRAND,
+        #...
+        $GENE_N_ID : $GENE_N_STRAND
+    }
+    """
+
     transcript_struct = {}
     """
     transcripts_struct= {
         $ID_GENOME : {
             $ID_GENE : {
-                $ID_TRASCRITTO : $TRASCRITTO_STRING
+                $ID_TRASCRITTO_1 : $TRASCRITTO_1_STRING,
+                $ID_TRASCRITTO_2 : $TRASCRITTO_2_STRING,
+                #...
+                $ID_TRASCRITTO_N : $TRASCRITTO_N_STRING
             }
         }
     }
@@ -220,6 +233,7 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
     # loop through every gene in the current genome
     for gene_id in gtf[genome_id]:
         transcript_struct[genome_id][gene_id] = {}
+        gene_strand_map[gene_id] = '?'
 
         # set unknown strand value for the current gene
         strand = '?'
@@ -249,6 +263,9 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
                     # if strand is unknown set it as the strand
                     # of the first exon of the gene
                     strand = exon['strand']
+
+                    # save gene strand in gene_strand_map
+                    gene_strand_map[gene_id] = strand + str(1)
 
                 elif strand != exon['strand']:
                     # we have to expect that all features of the same
@@ -333,7 +350,14 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
 
                 # append header for the current transcript
                 # to transcript_output string
-                transcript_output += ">{0} gene_id={1} length={2}\n".format(transcript_id, gene_id, len(t))
+                # >/source=ENm006 /gene_id="ARHGAP4" /gene_strand=-1 /transcript_id=U52112.4-005 /length=642
+                transcript_output += ">/source={0} /gene_id=\"{1}\" /gene_strand={2} /length={3} /transcript_id={4}\n".format(
+                    genome_id,
+                    gene_id,
+                    gene_strand_map[gene_id],
+                    len(t),
+                    transcript_id
+                )
 
                 # variable to take into account how many characters
                 # there are in the current line
@@ -369,8 +393,14 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
             xseq = genome[genome_id][p0-1:pf]
 
             # append current exon header to output string
-            exome_output += ">gene_id={0} length={1} transcripts={2}\n".format(exon_val["gene_id"], str(len(xseq)),
-                                                                   "|".join(exon_val["transcripts"]))
+            exome_output += ">/source={0} gene_id=\"{1}\" /gene_strand={2} /length={3} /transcripts_id={4}\n".format(
+                genome_id,
+                exon_val["gene_id"],
+                gene_strand_map[exon_val["gene_id"]],
+                str(len(xseq)),
+                "|".join(exon_val["transcripts"])
+            )
+
             # variable to take into account how many characters
             # there are in the current line
             start_index = 0
@@ -437,7 +467,14 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
                         prev_pf = pf
 
             # cc_output header
-            cc_output += str.format(">gene_id={0} length={1}\n", gene_id, len(ccseq))
+            # >/source=ENm006 /gene_id="ARHGAP4" /gene_strand=-1 /transcript_id=U52112.4-005 /length=642
+            cc_output += str.format(
+                ">/source={0} /gene_id=\"{1}\" /gene_strand={2} /length={3}\n",
+                genome_id,
+                gene_id,
+                gene_strand_map[gene_id],
+                len(ccseq)
+            )
 
             # variable to take into account how many characters
             # there are in the current line
