@@ -142,26 +142,33 @@ def readFastaGenome(fa_path):
     return genome
 
 
-def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=False, c_flag=False):
+def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=False, c_flag=False, s_flag=False):
     global STD_OUT, FASTA_WRAP_AFTER_COLUMNS
 
+    flags_amount = 0
+
+    if t_flag:
+        flags_amount += 1
+    if e_flag:
+        flags_amount += 1
+    if c_flag:
+        flags_amount += 1
+    if s_flag:
+        flags_amount += 1
+
     # if none file flags is set, then set all of them to True to print all outputs
-    if not (t_flag or e_flag or c_flag):
-        t_flag = e_flag = c_flag = True
+    if flags_amount == 0:
+        t_flag = e_flag = c_flag = s_flag = True
 
     # if user wants the output to be streamed on the std out
-    # but he/she chose more than one flag between -t, -e and -c
+    # but he/she chose more than one flag between -t, -e, -c and -s
     # then the script can no longer prints on stdout
     # so the user will be prompted to switch to file output
-    if STD_OUT and not (
-        (t_flag and not e_flag and not c_flag) or
-        (not t_flag and e_flag and not c_flag) or
-        (not t_flag and not e_flag and c_flag)
-    ):
+    if STD_OUT and flags_amount > 1:
         while True:
             # prompt the user to switch to file streaming
             i = input(
-                "You chose to write onto the standard output (-o), but the stdout allows only one file (between -t, -e and -c) at a time to be written on it. Write on files instead? (files will be created under the current folder) [Y/n]...\n").lower()
+                "You chose to write onto the standard output (-o), but the stdout allows only one file (between -t, -e, -c and -s) at a time to be written on it. Write on files instead? (files will be created under the current folder) [Y/n]...\n").lower()
             if i == "y":
                 # if choose YES then turn stdout off
                 STD_OUT = False
@@ -228,6 +235,20 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
         #...
     }
     """
+
+    cds_struct = {}
+    """
+    cds_struct = {
+        "$GENE_ID" : [
+            # for each cds feature
+            "$CDS_S1_START_INDEX:$CDS_S1_END_INDEX:",
+            "$CDS_S2_START_INDEX:$CDS_S2_END_INDEX:",
+            # ...
+            "$CDS_Sn_START_INDEX:$CDS_Sn_END_INDEX:"
+        ]
+    }
+    """
+
     transcript_struct[genome_id] = {}
 
     # loop through every gene in the current genome
@@ -334,10 +355,49 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
             # finally save transcript sequence in a transcript structure
             transcript_struct[genome_id][gene_id][transcript_id] = curr_transcript
 
+            ################
+            # start cds loop
+
+            if "CDS" in gtf[genome_id][gene_id][transcript_id]:
+                cdss = gtf[genome_id][gene_id][transcript_id]["CDS"]
+                tmp_cdss_dict = {}
+
+                for cds in cdss:
+                    p0 = cds['start_index']
+                    pf = cds['end_index']
+
+                    # if the p0 is not in the tmp_dict structure then the current exon
+                    # needs to be inserted into the tmp_dict structure
+                    # if p0 is already a key for tmp_dict it means that two differen
+                    # exons for the current transcript start at the same position
+                    if p0 not in tmp_cdss_dict:
+                        # save exon sequence in tmp_dict
+                        tmp_cdss_dict[p0] = genome[genome_id][p0 - 1:pf]
+                    else:
+                        raise Exception(
+                            "Fatal error: two different cds start at the same position",
+                            "(in genome_id: %s, gene_id: %s, transcript_id: %s" %
+                            (genome_id, gene_id, transcript_id)
+                        )
+
+                    # "p0;pf" key for the current exon that will be used into exon_struct
+                    tmp_cds_struct_key = str(p0) + ";" + str(pf)
+
+                    # if not exists, instantiate array in cc_struct for the current gene
+                    if gene_id not in cds_struct:
+                        cds_struct[gene_id] = []
+
+                    # append exon start_index and end_index as string "p0;pf" in cc_struct
+                    # array for the current gene
+                    if tmp_cds_struct_key not in cds_struct[gene_id]:
+                        cds_struct[gene_id].append(tmp_cds_struct_key)
+
+
     # whole strings (file content) to output
     transcript_output = ""
     exome_output = ""
     cc_output = ""
+    cds_output = ""
 
     #### format output for transcript file BEGIN
     if t_flag:
@@ -425,7 +485,7 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
 
     #### format output for cc file BEGIN
     if c_flag:
-        # loop through every gene in cc_structu
+        # loop through every gene in cc_struct
         for gene_id in cc_struct:
             # temp sequence for cc of the current gene
             ccseq  = ""
@@ -451,7 +511,7 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
                 p0 = int(p0)
                 pf = int(pf)
 
-                # it's likely that following controls are redundand
+                # it's likely that following controls are redundant
                 # or useless but I prefer redundant controls instead
                 # of any risk of failure
 
@@ -496,6 +556,85 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
         # remove all trailing newlines at the end of the cc output string
         while cc_output[-1:] == "\n":
             cc_output = cc_output[0:-1]
+    #### format output for cc file END
+
+    #### format output for cds file BEGIN
+    if s_flag:
+        # loop through every gene in cds_struct
+        for gene_id in cds_struct:
+            # temp sequence for cds of the current gene
+            cdsseq  = ""
+
+            # extract current gene cds array
+            gene_cds = cds_struct[gene_id]
+
+            # sort it
+            gene_cds.sort()
+
+            # var to keep previuos start_index and end_index
+            # in the following for cicle
+            prev_p0 = -1
+            prev_pf = -1
+
+            # loop through every item in gene_cds
+            for k in gene_cds:
+                # split k with regards to ";"
+                # reminder: k is formatted as "$start_index;$end_index"
+                p0, pf = k.split(";")
+
+                # convert them to int
+                p0 = int(p0)
+                pf = int(pf)
+
+                # it's likely that following controls are redundant
+                # or useless but I prefer redundant controls instead
+                # of any risk of failure
+
+                if p0 <= prev_pf:
+                    if pf > prev_pf:
+                        prev_pf = pf
+                        continue
+                else:
+                    if abs(prev_pf - prev_p0) > 0:
+                        cdsseq += genome[genome_id][prev_p0-1:prev_pf]
+                    prev_p0 = p0
+                    if pf > prev_pf:
+                        prev_pf = pf
+
+            start_codon = cdsseq[0:3]
+            stop_codon = cdsseq[-3:]
+
+            # cds_output header
+            cds_output += str.format(
+                ">/source={0} /gene_id=\"{1}\" /gene_strand={2} /length={3} /start_codon={4} /stop_codon={5}\n",
+                genome_id,
+                gene_id,
+                gene_strand_map[gene_id],
+                len(cdsseq),
+                start_codon,
+                stop_codon
+            )
+
+            # variable to take into account how many characters
+            # there are in the current line
+            start_index = 0
+
+            # loop through every character in current cc sequence
+            while start_index < len(cdsseq):
+                # if remaining cheracters to print are long enough to fill up
+                # an entire line FASTA_WRAP_AFTER_COLUMNS long
+                if start_index + FASTA_WRAP_AFTER_COLUMNS < len(cdsseq):
+                    # then print a line FASTA_WRAP_AFTER_COLUMNS long
+                    cds_output += cdsseq[start_index:start_index + FASTA_WRAP_AFTER_COLUMNS] + "\n"
+                else:
+                    # else print remaing characters in the current cc sequence
+                    cds_output += cdsseq[start_index:] + "\n"
+                    break
+                start_index += FASTA_WRAP_AFTER_COLUMNS
+
+        # remove all trailing newlines at the end of the cc output string
+        while cds_output[-1:] == "\n":
+            cds_output = cds_output[0:-1]
     #### format output for cc file END
 
     #### PRINT OUTPUTS
@@ -568,8 +707,25 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
                 print("Error: CC's file " + tmp_path + " already exists and this behaviour is very weird")
                 pass
 
+        # if s_flag is on
+        if s_flag:
+            # create $GENOME_$TIMESTAMP_cds.fa file
+            tmp_path = output_dir + file_prefix + "cds.fa"
+
+            # create file only if it doesn't exist
+            if not os.path.exists(tmp_path):
+                # create, write to and close file
+                with open(tmp_path, 'w') as cds_file:
+                    cds_file.write(cds_output)
+                    cds_file.close()
+                    print("CDS' file created at " + tmp_path)
+            else:
+                # current file already exists and this is crazy
+                print("Error: CDS' file " + tmp_path + " already exists and this behaviour is very weird")
+                pass
+
         # if all flags are down
-        if not (t_flag or e_flag or c_flag):
+        if not (t_flag or e_flag or c_flag or s_flag):
             raise Exception(
                 "Very weird error: the program was sure you chose to print something on files" +
                 " but there is nothing to print :("
@@ -582,6 +738,8 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
             print(exome_output)
         elif c_flag:
             print(cc_output)
+        elif s_flag:
+            print(cds_output)
         else:
             raise Exception(
                 "Very weird error: the program was sure you chose to print on the Standard Output" +
@@ -663,6 +821,14 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
+        '-s', '--cds',
+        action='store_true',
+        required=False,
+        help='Create (only) cds file',
+        dest='s_flag'
+    )
+
+    parser.add_argument(
         '-o',
         action='store_true',
         required=False,
@@ -681,5 +847,6 @@ if __name__ == '__main__':
         args.output_dir,
         args.t_flag,
         args.e_flag,
-        args.c_flag
+        args.c_flag,
+        args.s_flag
     )
