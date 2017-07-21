@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 import time
+import json
 
 # GLOBALS
 # print on stdout instead of on files
@@ -239,21 +240,22 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
     cds_struct = {}
     """
     cds_struct = {
-        "$GENE_ID" : [
-            # for each cds feature
-            "$CDS_S1_START_INDEX:$CDS_S1_END_INDEX:",
-            "$CDS_S2_START_INDEX:$CDS_S2_END_INDEX:",
-            # ...
-            "$CDS_Sn_START_INDEX:$CDS_Sn_END_INDEX:"
-        ]
+        $ID_GENE : {
+            $ID_TRASCRITTO_1 : $CDS_1_SEQUENCE,
+            $ID_TRASCRITTO_2 : $CDS_2_SEQUENCE,
+            #...
+            $ID_TRASCRITTO_N : $CDS_N_SEQUENCE
+        }
     }
     """
 
     transcript_struct[genome_id] = {}
+    cds_struct[genome_id] = {}
 
     # loop through every gene in the current genome
     for gene_id in gtf[genome_id]:
         transcript_struct[genome_id][gene_id] = {}
+        cds_struct[genome_id][gene_id] = {}
         gene_strand_map[gene_id] = '?'
 
         # set unknown strand value for the current gene
@@ -336,16 +338,16 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
                     cc_struct[gene_id].append(tmp_exon_struct_key)
 
             # extract tmp_dict keys
-            tmp_dict_keys = list(tmp_exons_dict.keys())
+            tmp_exons_dict_keys = list(tmp_exons_dict.keys())
 
-            # sort tmp_dict_keys list
-            tmp_dict_keys.sort()
+            # sort tmp_exons_dict_keys list
+            tmp_exons_dict_keys.sort()
 
             # current transcript nucleotides sequence
             curr_transcript = ""
 
-            # read exons' sequence ordered by keys using tmp_dict_keys list
-            for key in tmp_dict_keys:
+            # read exons' sequence ordered by keys using tmp_exons_dict_keys list
+            for key in tmp_exons_dict_keys:
                 curr_transcript = curr_transcript + tmp_exons_dict[key]
 
             # reverse and complement transcript if it has negative strand
@@ -380,17 +382,25 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
                             (genome_id, gene_id, transcript_id)
                         )
 
-                    # "p0;pf" key for the current exon that will be used into exon_struct
-                    tmp_cds_struct_key = str(p0) + ";" + str(pf)
+                # extract tmp_dict keys
+                tmp_cdss_dict_keys = list(tmp_cdss_dict.keys())
 
-                    # if not exists, instantiate array in cc_struct for the current gene
-                    if gene_id not in cds_struct:
-                        cds_struct[gene_id] = []
+                # sort tmp_exons_dict_keys list
+                tmp_cdss_dict_keys.sort()
 
-                    # append exon start_index and end_index as string "p0;pf" in cc_struct
-                    # array for the current gene
-                    if tmp_cds_struct_key not in cds_struct[gene_id]:
-                        cds_struct[gene_id].append(tmp_cds_struct_key)
+                # current transcript nucleotides sequence
+                curr_cds = ""
+
+                # read exons' sequence ordered by keys using tmp_exons_dict_keys list
+                for key in tmp_cdss_dict_keys:
+                    curr_cds = curr_cds + tmp_cdss_dict[key]
+
+                # reverse and complement transcript if it has negative strand
+                if strand == '-':
+                    curr_cds = reverseAndComplement(curr_cds)
+
+                # finally save transcript sequence in a transcript structure
+                cds_struct[genome_id][gene_id][transcript_id] = curr_cds
 
 
     # whole strings (file content) to output
