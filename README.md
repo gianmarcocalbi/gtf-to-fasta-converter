@@ -1,7 +1,7 @@
 # Progetto Bioinformatica
 Lo script si comporta secondo le specifiche in `docs/SPECIFICHE.md`.
 
-In generale, riceve in input un file GTF (`.gtf`) e un file FASTA (`.fa`) e produce in output 3 file FASTA (`.fa`).
+In generale, riceve in input un file GTF (`.gtf`) e un file FASTA (`.fa`) e produce in output 4 file FASTA (`.fa`).
 
 ## Dipendenze
 Lo script utilizza i moduli `argparse`, `os`, `sys` e `time`. Essi **sono già inclusi** di default in python.
@@ -9,7 +9,7 @@ Lo script utilizza i moduli `argparse`, `os`, `sys` e `time`. Essi **sono già i
 **È richiesta una VERSIONE 3+ di Python** (una distribuzione della v3 o superiore).
 
 # Output
-Lo script può generare i seguenti 3 diversi file.
+Lo script può generare i seguenti 4 diversi file.
 
 _Con `$GENOME` che è l'ID del genoma estratto dall'header del genoma passato in input e `$TIMESTAMP` è il timestamp al momento della creazione del file (è uno stratagemma per essere sicuri di avere file con nomi univoci ad ogni esecuzione del programma)._
 
@@ -86,6 +86,35 @@ In cui, per ogni copertura codificante, vengono specificati:
 - `$LEN` : lunghezza della sequenza della copertura.
 
 
+### `$GENOME_$TIMESTAMP_cds.fa`
+File contenente le CDS di ciascun trascritto. Ad esempio:
+```
+>/source=$GENOME_ID /gene_id="$GENE_1_ID" /gene_strand=$GENE_1_STRAND /length=$LEN /transcript_id=$TRASCRIPT_X_ID /start_codon=XXX /stop_codon=YYY
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+>/source=$GENOME_ID /gene_id="$GENE_1_ID" /gene_strand=$GENE_1_STRAND /length=$LEN /transcript_id=$TRASCRIPT_Y_ID /start_codon=XXX /stop_codon=YYY
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXX
+>/source=$GENOME_ID /gene_id="$GENE_Y_ID" /gene_strand=$GENE_Y_STRAND /length=$LEN /transcript_id=$TRASCRIPT_Z_ID /start_codon=XXX /stop_codon=YYY
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXX
+#etc...
+```
+
+In cui, per ogni CDS, vengono specificati:
+- `$GENOME_ID` : id univoco del genoma di riferimento;
+- `$GENE_N_ID` : id del gene a cui appartiene la CDS (**NB**: **questo campo e solo questo campo** è circondato da doppi apici);
+- `$GENE_N_STRAND` : strand del gene (`+1` o `-1`);
+- `$LEN` : lunghezza della sequenza della CDS;
+- `$TRASCRIPT_N_ID` : id del trascritto a cui appartiene la CDS;
+- `start_codon` : codone di inizio della CDS;
+- `stop_codon` : codone di fine della CDS.
+
+
 _**NB**: il formato degli header dei file rispecchia lo standard utilizzato nelle banche dati._
 
 # Utilizzo primario dello script
@@ -113,7 +142,7 @@ per un elenco dettagliato delle flag disponibili.
 ## Args
 ```
 $ python xtractor.py -h
-usage: xtractor.py [-h] [-d OUTPUT_DIR] [-t] [-e] [-c] [-o]
+usage: xtractor.py [-h] [-d OUTPUT_DIR] [-t] [-e] [-c] [-s] [-o]
                    genome_path gtf_path
 
 GTF to FASTA extractor (for transcripts, exome and cc)
@@ -129,6 +158,7 @@ optional arguments:
   -t, --transcripts     Create (only) transcripts file
   -e, --exome           Create (only) exome file
   -c, --cc              Create (only) cc file
+  -s, --cds             Create (only) cds file
   -o                    Print to standard output instead of creating files
                         (allowed only whether exactly one flag between -t, -e
                         or -c is used)
@@ -221,7 +251,7 @@ exit()
 ```
 Poi si copi il contenuto del file `nome_qualsiasi.txt` in [JSON Formatter](https://jsonformatter.curiousconcept.com/) per visualizzare la gtf in modo dettagliato e _human readable_.
 
-#### `grind(str genome_path, str gtf_path, str output_dir=os.getcwd(), bool t_flag=False, bool e_flag=False, bool c_flag=False)`
+#### `grind(str genome_path, str gtf_path, str output_dir=os.getcwd(), bool t_flag=False, bool e_flag=False, bool c_flag=False, bool s_flag=False)`
 Procedura principale per l'analisi dei file in input. Non restituisce nulla.
 
 Riceve in input due stringhe obbligatorie:
@@ -232,7 +262,8 @@ Accetta ulteriori 4 parametri opzionali:
 - `output_dir` : percorso di una cartella ESISTENTE del sistema in cui verranno creati i file di output;
 - `t_flag` : valore booleano, se True allora crea il file dei trascritti, altrimenti no;
 - `e_flag` : valore booleano, se True allora crea il file dell'esoma, altrimenti no;
-- `c_flag` : valore booleano, se True allora crea il file delle coperture codificanti, altrimenti no.
+- `c_flag` : valore booleano, se True allora crea il file delle coperture codificanti, altrimenti no;
+- `s_flag` : valore booleano, se True allora crea il file delle CDS, altrimenti no.
 
 
 **NB**: i percorsi possono essere sia assoluti sia relativi (in tal caso devono far riferimento alla cartella in cui è contenuto il file `xtractor.py`). 

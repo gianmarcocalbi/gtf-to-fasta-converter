@@ -570,82 +570,50 @@ def grind(genome_path, gtf_path, output_dir=os.getcwd(), t_flag=False, e_flag=Fa
 
     #### format output for cds file BEGIN
     if s_flag:
-        # loop through every gene in cds_struct
-        for gene_id in cds_struct:
-            # temp sequence for cds of the current gene
-            cdsseq  = ""
+        # loop through all gene in current genome
+        for gene_id in cds_struct[genome_id]:
+            # loop through all transcript found for the current gene
+            for transcript_id in cds_struct[genome_id][gene_id]:
+                # extract cds sequence using current trascript_id
+                cdsseq = cds_struct[genome_id][gene_id][transcript_id]
 
-            # extract current gene cds array
-            gene_cds = cds_struct[gene_id]
+                start_codon = cdsseq[0:3]
+                stop_codon = cdsseq[-3:]
 
-            # sort it
-            gene_cds.sort()
+                # append header for the current cds
+                # to cds_output string
+                # >/source=ENm006 /gene_id="ARHGAP4" /gene_strand=-1 /length=642 /transcript_id=U52112.4-005 /start_codon=ATG /stop_codon=TAG
+                cds_output += ">/source={0} /gene_id=\"{1}\" /gene_strand={2} /length={3} /transcript_id={4} /start_codon={5} /stop_codon={6}\n".format(
+                    genome_id,
+                    gene_id,
+                    gene_strand_map[gene_id],
+                    len(cdsseq),
+                    transcript_id,
+                    start_codon,
+                    stop_codon
+                )
 
-            # var to keep previuos start_index and end_index
-            # in the following for cicle
-            prev_p0 = -1
-            prev_pf = -1
+                # variable to take into account how many characters
+                # there are in the current line
+                start_index = 0
 
-            # loop through every item in gene_cds
-            for k in gene_cds:
-                # split k with regards to ";"
-                # reminder: k is formatted as "$start_index;$end_index"
-                p0, pf = k.split(";")
+                # loop through every character in current cds sequence
+                while start_index < len(cdsseq):
+                    # if remaining cheracters to print are long enough to fill up
+                    # an entire line FASTA_WRAP_AFTER_COLUMNS long
+                    if start_index + FASTA_WRAP_AFTER_COLUMNS < len(cdsseq):
+                        # then print a line FASTA_WRAP_AFTER_COLUMNS long
+                        cds_output += cdsseq[start_index:start_index + FASTA_WRAP_AFTER_COLUMNS] + "\n"
+                    else:
+                        # else print remaing characters in the current cds sequence
+                        cds_output += cdsseq[start_index:] + "\n"
+                        break
+                    start_index += FASTA_WRAP_AFTER_COLUMNS
 
-                # convert them to int
-                p0 = int(p0)
-                pf = int(pf)
-
-                # it's likely that following controls are redundant
-                # or useless but I prefer redundant controls instead
-                # of any risk of failure
-
-                if p0 <= prev_pf:
-                    if pf > prev_pf:
-                        prev_pf = pf
-                        continue
-                else:
-                    if abs(prev_pf - prev_p0) > 0:
-                        cdsseq += genome[genome_id][prev_p0-1:prev_pf]
-                    prev_p0 = p0
-                    if pf > prev_pf:
-                        prev_pf = pf
-
-            start_codon = cdsseq[0:3]
-            stop_codon = cdsseq[-3:]
-
-            # cds_output header
-            cds_output += str.format(
-                ">/source={0} /gene_id=\"{1}\" /gene_strand={2} /length={3} /start_codon={4} /stop_codon={5}\n",
-                genome_id,
-                gene_id,
-                gene_strand_map[gene_id],
-                len(cdsseq),
-                start_codon,
-                stop_codon
-            )
-
-            # variable to take into account how many characters
-            # there are in the current line
-            start_index = 0
-
-            # loop through every character in current cc sequence
-            while start_index < len(cdsseq):
-                # if remaining cheracters to print are long enough to fill up
-                # an entire line FASTA_WRAP_AFTER_COLUMNS long
-                if start_index + FASTA_WRAP_AFTER_COLUMNS < len(cdsseq):
-                    # then print a line FASTA_WRAP_AFTER_COLUMNS long
-                    cds_output += cdsseq[start_index:start_index + FASTA_WRAP_AFTER_COLUMNS] + "\n"
-                else:
-                    # else print remaing characters in the current cc sequence
-                    cds_output += cdsseq[start_index:] + "\n"
-                    break
-                start_index += FASTA_WRAP_AFTER_COLUMNS
-
-        # remove all trailing newlines at the end of the cc output string
+        # remove all trailing newlines at the end of the cds output string
         while cds_output[-1:] == "\n":
             cds_output = cds_output[0:-1]
-    #### format output for cc file END
+    #### format output for cds file END
 
     #### PRINT OUTPUTS
     if not STD_OUT:

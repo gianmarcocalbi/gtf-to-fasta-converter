@@ -72,7 +72,7 @@ Gli attributi obbligatori (sempre presenti) sono:
 
 
 ## Output
-Lo script produce in output **tre file in formato FASTA** specificati in seguito.
+Lo script produce in output **quattro file in formato FASTA** specificati in seguito.
 
 ### File .fa delle sequenze dei trascritti
 File FASTA delle sequenze dei trascritti ricostruiti per tutti i geni contenuti nell'input. 
@@ -108,3 +108,12 @@ Supponi di avere un gene con i seguenti tre trascritti:
 - trascritto 4 —> concatenazione degli esoni A, D e C dove D non ha sovrapposizione con B e viene dopo B
 
 La copertura sarà data dalla concatenazione di A, B, D e C
+
+### File .fa delle sequenze delle CDS
+File FASTA delle sequenze delle CDS ricostruite per ciascun trascritto nella GTF. 
+
+Nell’header FASTA di ogni trascritto devono comparire le seguenti informazioni: 
+* lunghezza
+* id del gene a cui il trascritto appartiene
+* id del trascritto
+* start e stop codon.
